@@ -1,11 +1,11 @@
 from flask import Blueprint, request
 from sqlalchemy import exc
-from sqlalchemy.sql.expression import null
-from ..db import db
-from .models import Athlete, Activity, Gear
+from sqlalchemy.orm import session
 import time
 from dateutil.parser import parse
 from dateutil.tz import tzutc
+from .models import Athlete, Activity, Gear
+from ..db import db
 
 
 class Routes:
@@ -18,6 +18,8 @@ class Routes:
         self.route_add_activity()
         self.route_add_gear()
         # TODO add get & update routes for each
+        self.route_get_athlete()
+        self.route_update_athlete()
 
         return self.bp
 
@@ -207,3 +209,60 @@ class Routes:
                 print("ERROR: " + str(error.orig))
                 msg = {'message': 'Error adding gear'}
                 return msg, 500
+
+    def route_get_athlete(self):
+        @self.bp.route('/athlete/<id>', methods=['GET'])
+        def get_athlete(id):
+            session = db.session
+            athlete = session.query(Athlete).filter_by(
+                id=id).first()
+
+            if athlete is not None:
+                data = {'strava_id': athlete.strava_id, 'firstname': athlete.firstname,
+                        'lastname': athlete.lastname, 'profile': athlete.profile, 'sex': athlete.sex,
+                        'city': athlete.city, 'country': athlete.country, 'email': athlete.email,
+                        'weight': athlete.weight, 'created_at': athlete.time_created,
+                        'updated_at': athlete.time_updated}
+                return data, 200
+
+            msg = {'message': 'Error, athlete not found'}
+            return msg, 400
+
+    def route_update_athlete(self):
+        @self.bp.route('/athlete/update/<id>', methods=['POST'])
+        def update_athlete(id):
+            session = db.session
+            data = request.get_json()
+            immutable_fields = ['id', 'strava_id',
+                                'username', 'time_created', 'time_updated']
+            athlete_id = id
+            existing = session.query(Athlete).filter_by(id=athlete_id).first()
+            if existing is None:
+                msg = {'message': 'Error updating athlete, record not found'}
+                return msg, 400
+
+            update_list = list(set(data) - set(immutable_fields))
+            update_values = {}
+            for key in update_list:
+                v = data.get(key)
+                e = existing.__getattribute__(key)
+                print(f'new {v}, compare with existing {e}')
+                if v != e:
+                    update_values[key] = v
+
+            if len(update_values) > 0:
+                update_values['time_updated'] = round(time.time())
+                try:
+                    session.query(Athlete).filter_by(
+                        id=existing.id).update(update_values)
+                    session.commit()
+                    msg = {
+                        'message': f'Athlete {existing.username} successfully updated!'}
+                    return msg, 200
+                except exc.SQLAlchemyError as error:
+                    print("ERROR: " + str(error.orig))
+                    msg = {'message': 'Error updating athlete'}
+                    return msg, 500
+            else:
+                msg = {'message': 'Athlete already up to date'}
+                return msg, 200
