@@ -1,6 +1,6 @@
-from ..db import db
-from sqlalchemy.sql.sqltypes import BigInteger, Float, Integer, String
 from sqlalchemy import Column, ForeignKey
+from sqlalchemy.sql.sqltypes import BigInteger, Float, Integer, String
+from ..conf import db
 
 
 class Athlete(db.Model):
@@ -16,25 +16,27 @@ class Athlete(db.Model):
     sex = Column(String(1), default='')
     weight = Column(Float(2))
     profile = Column(String(120), default='')
-    time_created = Column(BigInteger, nullable=False)
-    time_updated = Column(BigInteger, nullable=False)
+    created_at = Column(BigInteger, nullable=False)
+    updated_at = Column(BigInteger, nullable=False)
 
 
 class Gear(db.Model):
     id = Column(BigInteger, primary_key=True)
-    strava_gear_id = Column(String(16), unique=True, default='')
+    strava_gear_id = Column(String(16), unique=True)
     name = Column(String(100), nullable=False)
-    brand = Column(String(100), nullable=False)
-    model = Column(String(100), nullable=False)
+    brand_name = Column(String(100), nullable=False)
+    model_name = Column(String(100), nullable=False)
     description = Column(String(256), default='')
     primary = Column(Integer, default=0)
     retired = Column(Integer, default=0)
     weight = Column(Float(2))
+    created_at = Column(BigInteger, nullable=False)
 
 
 class Activity(db.Model):
     id = Column(BigInteger, primary_key=True)
-    athlete_id = Column(BigInteger, ForeignKey(Athlete.id))
+    #athlete_id = Column(BigInteger, ForeignKey(Athlete.id))
+    athlete_id = Column(BigInteger)
     name = Column(String(100), nullable=False)
     description = Column(String(256), default='')
     distance = Column(Integer, nullable=False)
@@ -49,6 +51,7 @@ class Activity(db.Model):
     achievement_count = Column(Integer, default=0)
     kudos_count = Column(Integer, default=0)
     comment_count = Column(Integer, default=0)
+    pr_count = Column(Integer, default=0)
     photo_count = Column(Integer, default=0)
     average_temp = Column(Float(1))
     average_watts = Column(Float(2))

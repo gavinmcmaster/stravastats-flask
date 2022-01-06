@@ -1,6 +1,6 @@
 import click
 from flask import Blueprint
-from ..db import db
+from ..conf import db
 
 
 def create_blueprint() -> Blueprint:
