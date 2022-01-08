@@ -4,7 +4,7 @@ from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy import exc
 from marshmallow.exceptions import ValidationError
 import time
-from ..conf import db
+from ..db import get_db
 from .schemas import gear_schema, athlete_schema, activity_schema
 
 
@@ -12,14 +12,17 @@ class AddGearService:
 
     def __init__(self, json_args, _session=None) -> None:
         self.json_args = json_args
-        self.session = _session or db.session
+        self.session = _session or get_db().session
 
     def _get_gear(self) -> Boolean:
         try:
+            print("HELP")
+            print(self.json_args)
             self.gear = gear_schema.load(self.json_args)
             return True
         except ValidationError as error:
             print("GearService Validation error " + str(error.args[0]))
+            print(self.json_args)
             return False
 
     def process(self) -> Boolean:
@@ -43,7 +46,7 @@ class AddAthleteService:
 
     def __init__(self, json_args, _session=None) -> None:
         self.json_args = json_args
-        self.session = _session or db.session
+        self.session = _session or get_db().session
 
     def _get_athlete(self) -> Boolean:
         try:
@@ -77,7 +80,7 @@ class AddActivityService:
 
     def __init__(self, json_args, _session=None) -> None:
         self.json_args = json_args
-        self.session = _session or db.session
+        self.session = _session or get_db().session
 
     def _get_activity(self) -> Boolean:
         try:
