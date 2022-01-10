@@ -28,7 +28,3 @@ def test_add_gear(app, client):
 def test_get_gears(app, client):
     response = client.get("/gears")
     assert response.status_code == 200
-    with app.app_context():
-        db = get_db()
-        # TODO - centralise into final teardown function
-        db.engine.execute("DELETE FROM gear")

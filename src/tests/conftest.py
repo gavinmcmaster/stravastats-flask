@@ -1,25 +1,30 @@
 import os
+from dotenv import load_dotenv
 import pytest
 from stravastats import create_app
-from stravastats.db import drop_db, reset_db, get_db
-
-# read in SQL for populating test data
-with open(os.path.join(os.path.dirname(__file__), "data.sql"), "rb") as f:
-    _data_sql = f.read().decode("utf8")
+from stravastats.db import drop_db, reset_db
 
 
 @pytest.fixture
 def app():
-    app = create_app({"TESTING": True})
+    load_dotenv()
+
+    test_config = {"TESTING": True}
+    test_config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+        'DATABASE_UNIT_TEST_URI')
+    test_config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv(
+        'SQL_TRACK_MODS')
+
+    app = create_app(test_config)
     app.testing = True
 
     with app.app_context():
         reset_db()
-        # get_db().engine.execute(_data_sql)
 
     yield app
 
-    # drop_db()
+    with app.app_context():
+        drop_db()
 
 
 @pytest.fixture
