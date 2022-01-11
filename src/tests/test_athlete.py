@@ -1,6 +1,7 @@
 from stravastats.db import get_db
 from stravastats.api.models import Athlete
 from sqlalchemy import insert
+from .conftest import decode_response
 
 
 def test_add_athlete(app, client):
@@ -22,6 +23,8 @@ def test_add_athlete(app, client):
         "/athlete/add", json=body
     )
     assert response.status_code == 201
+    data = decode_response(response.data)
+    assert data['message'] == "Athlete 'testuser' added"
 
     with app.app_context():
         db = get_db()

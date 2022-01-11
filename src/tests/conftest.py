@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import pytest
 from stravastats import create_app
 from stravastats.db import drop_db, reset_db
+import ast
 
 
 @pytest.fixture
@@ -31,3 +32,7 @@ def app():
 def client(app):
     """A test client for the app."""
     return app.test_client()
+
+
+def decode_response(data):
+    return ast.literal_eval(data.decode('utf-8'))
