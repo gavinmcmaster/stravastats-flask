@@ -3,6 +3,8 @@ import os
 from dotenv import load_dotenv
 from .dev import create_blueprint as create_dev_blueprint
 from .api import create_blueprint as create_api_blueprint
+from .api.auth.views import auth_blueprint
+
 from .conf import ma, db
 
 
@@ -23,6 +25,7 @@ def create_app(test_config=None) -> Flask:
 
     app.register_blueprint(create_dev_blueprint())
     app.register_blueprint(create_api_blueprint())
+    app.register_blueprint(auth_blueprint)
 
     return app
 

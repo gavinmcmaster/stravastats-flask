@@ -1,6 +1,7 @@
+import json
+from sqlalchemy import insert
 from stravastats.db import get_db
 from stravastats.api.models import Gear
-from .conftest import decode_response
 
 
 def test_add_gear(app, client):
@@ -19,7 +20,8 @@ def test_add_gear(app, client):
         "/gear/add", json=body
     )
     assert response.status_code == 201
-    data = decode_response(response.data)
+    assert response.content_type == 'application/json'
+    data = json.loads(response.data.decode())
     assert data['message'] == "Gear 'Boardman Team 2013' added"
 
     with app.app_context():

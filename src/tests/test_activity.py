@@ -1,7 +1,7 @@
+import json
+from sqlalchemy import insert
 from stravastats.db import get_db
 from stravastats.api.models import Activity
-from sqlalchemy import insert
-from .conftest import decode_response
 
 
 def test_add_activity(app, client):
@@ -32,7 +32,8 @@ def test_add_activity(app, client):
         "/activity/add", json=body
     )
     assert response.status_code == 201
-    data = decode_response(response.data)
+    assert response.content_type == 'application/json'
+    data = json.loads(response.data.decode())
     assert data['message'] == "Activity 'NC500: Brora to Dingwall' added"
 
     with app.app_context():

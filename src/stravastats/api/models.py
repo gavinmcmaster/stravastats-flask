@@ -1,5 +1,10 @@
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import BigInteger, Float, Integer, String
+import jwt
+import bcrypt
+import os
+import time
+import datetime
 from ..conf import db
 
 
@@ -7,7 +12,6 @@ class Athlete(db.Model):
     id = Column(BigInteger, primary_key=True)
     strava_id = Column(BigInteger, unique=True, nullable=False, index=True)
     username = Column(String(100), unique=True, nullable=False)
-    password = Column(String(100), nullable=False, default='')
     firstname = Column(String(100), nullable=False)
     lastname = Column(String(100), nullable=False)
     email = Column(String(100), nullable=False, default='')
@@ -18,6 +22,44 @@ class Athlete(db.Model):
     profile = Column(String(120), default='')
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
+
+
+class User(db.Model):
+    id = Column(BigInteger, primary_key=True)
+    email = Column(String(100), nullable=False, default='')
+    password = db.Column(db.String(255), nullable=False)
+    strava_id = Column(BigInteger, ForeignKey(
+        Athlete.strava_id), unique=True, nullable=True)
+    created_at = Column(BigInteger, nullable=False)
+
+    def __init__(self, email, password, strava_id=None):
+        self.email = email
+        salt = bcrypt.gensalt()
+        print(type(password))
+        b = password.encode('utf-8')
+        self.password = bcrypt.hashpw(b, salt)
+        self.strava_id = strava_id
+        self.created_at = round(time.time())
+
+    def encode_auth_token(self, user_id):
+        """
+        Generates the Auth Token
+        :return: string
+        """
+        try:
+            payload = {
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+                'iat': datetime.datetime.utcnow(),
+                'sub': user_id
+            }
+
+            return jwt.encode(
+                payload,
+                os.getenv('SECRET_KEY'),
+                algorithm='HS256'
+            )
+        except Exception as e:
+            return e
 
 
 class Gear(db.Model):
@@ -35,7 +77,6 @@ class Gear(db.Model):
 
 class Activity(db.Model):
     id = Column(BigInteger, primary_key=True)
-    #athlete_id = Column(BigInteger, ForeignKey(Athlete.id))
     athlete_id = Column(BigInteger)
     name = Column(String(100), nullable=False)
     description = Column(String(256), default='')
