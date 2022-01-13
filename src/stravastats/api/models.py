@@ -1,3 +1,4 @@
+from ast import Str
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import BigInteger, Float, Integer, String
 import jwt
@@ -25,6 +26,9 @@ class Athlete(db.Model):
 
 
 class User(db.Model):
+    # Table can't be called 'user' in Postgresql
+    __tablename__ = "registered_user"
+
     id = Column(BigInteger, primary_key=True)
     email = Column(String(100), nullable=False, default='')
     password = db.Column(db.String(255), nullable=False)
@@ -32,34 +36,33 @@ class User(db.Model):
         Athlete.strava_id), unique=True, nullable=True)
     created_at = Column(BigInteger, nullable=False)
 
-    def __init__(self, email, password, strava_id=None):
+    def __init__(self, email, password, strava_id=None) -> None:
         self.email = email
+        encoded_pass = password.encode('utf-8')
         salt = bcrypt.gensalt()
-        print(type(password))
-        b = password.encode('utf-8')
-        self.password = bcrypt.hashpw(b, salt)
+        self.password = bcrypt.hashpw(encoded_pass, salt).decode()
         self.strava_id = strava_id
         self.created_at = round(time.time())
 
-    def encode_auth_token(self, user_id):
-        """
-        Generates the Auth Token
-        :return: string
-        """
+    def validate_credentials(self, password) -> bool:
         try:
-            payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
-                'iat': datetime.datetime.utcnow(),
-                'sub': user_id
-            }
-
-            return jwt.encode(
-                payload,
-                os.getenv('SECRET_KEY'),
-                algorithm='HS256'
-            )
+            return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
         except Exception as e:
-            return e
+            # log exception
+            return False
+
+    def encode_auth_token(self, user_id) -> Str:
+        payload = {
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=1),
+            'iat': datetime.datetime.utcnow(),
+            'sub': user_id
+        }
+
+        return jwt.encode(
+            payload,
+            os.getenv('SECRET_KEY'),
+            algorithm='HS256'
+        )
 
 
 class Gear(db.Model):
