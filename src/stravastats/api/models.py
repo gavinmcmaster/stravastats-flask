@@ -1,4 +1,4 @@
-from ast import Str
+from xmlrpc.client import Boolean
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import BigInteger, Float, Integer, String
 import jwt
@@ -51,7 +51,7 @@ class User(db.Model):
             # log exception
             return False
 
-    def encode_auth_token(self, user_id) -> Str:
+    def encode_auth_token(self, user_id) -> String:
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=1),
             'iat': datetime.datetime.utcnow(),
@@ -103,3 +103,10 @@ class Activity(db.Model):
     max_speed = Column(Float(2))
     calories = Column(Integer)
     bikepacking = Column(Integer, default=0)
+
+
+class AuthToken(db.Model):
+    id = Column(BigInteger, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    token = Column(String(200), nullable=False)
+    created_at = Column(BigInteger, nullable=False)

@@ -1,4 +1,4 @@
-from .models import Athlete, Gear, Activity
+from .models import Athlete, Gear, Activity, AuthToken
 from ..conf import ma
 
 
@@ -38,3 +38,13 @@ class ActivitySchema(ma.SQLAlchemyAutoSchema):
 
 activity_schema = ActivitySchema()
 activities_schema = ActivitySchema(many=True)
+
+
+class AuthTokenSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = AuthToken
+        load_instance = True
+        include_fk = True
+
+
+auth_token_schema = AuthTokenSchema()

@@ -27,6 +27,8 @@ def create_app(test_config=None) -> Flask:
     app.register_blueprint(create_api_blueprint())
     app.register_blueprint(auth_blueprint)
 
+    app.secret_key = os.getenv('SECRET_KEY')
+
     return app
 
 

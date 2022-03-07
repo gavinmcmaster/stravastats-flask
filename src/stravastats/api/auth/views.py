@@ -1,9 +1,10 @@
 
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, jsonify, make_response, session
 from flask.views import MethodView
 from ...db import get_db
 from ..models import User
-import bcrypt
+from .helper import validate_api_token, unauthorized_response
+from ..services import AuthTokenService
 
 
 class RegisterAPI(MethodView):
@@ -24,6 +25,9 @@ class RegisterAPI(MethodView):
                 self.session.add(user)
                 self.session.commit()
                 auth_token = user.encode_auth_token(user.id)
+                token_service = AuthTokenService(user.id, auth_token)
+                if not token_service.add():
+                    return unauthorized_response()
                 responseObject = {
                     'status': 'success',
                     'message': 'User successfully registered',
@@ -59,35 +63,72 @@ class LoginAPI(MethodView):
             if user:
                 if (user.validate_credentials(post_data.get('password'))):
                     auth_token = user.encode_auth_token(user.id)
+                    token_service = AuthTokenService(user.id, auth_token)
+                    if not token_service.add():
+                        return unauthorized_response()
                     responseObject = {
                         'status': 'success',
                         'message': 'User successfully logged in',
                         'auth_token': auth_token
                     }
+                    session['user_id'] = user.id
+
                     return make_response(jsonify(responseObject)), 200
                 else:
-                    return self._return_unauthorized_response()
+                    return unauthorized_response()
             else:
-                return self._return_unauthorized_response()
+                print("User does not exist UNAUTHORISED")
+                return unauthorized_response()
         except Exception as e:
-            print("LoginAPI ERROR " + e.args[0])
+            print("LoginAPI ERROR " + str(e.args[0]))
             responseObject = {
                 'status': 'fail',
                 'message': 'An error occurred'
             }
             return make_response(jsonify(responseObject)), 500
 
-    def _return_unauthorized_response(self):
-        responseObject = {
-            'status': 'fail',
-            'message': 'Invalid user credentials',
-        }
+
+class LogoutAPI(MethodView):
+
+    def __init__(self, _session=None) -> None:
+        self.session = _session or get_db().session
+
+    @validate_api_token
+    def post(self):
+        try:
+            token = self._get_token()
+            user_id = session['user_id']
+            print(f"LOGOUT")
+            print(f"user id {user_id}")
+            print(f"token {token}")
+            token_service = AuthTokenService(user_id, token)
+            if not token_service.delete():
+                return unauthorized_response()
+
+            print(f"LOGOUT TOKEN DELETED")
+
+            session['user_id'] = None
+            responseObject = {
+                'status': 'success',
+                'message': 'Successfully logged out'
+            }
+            return make_response(jsonify(responseObject)), 200
+        except:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Not authorized',
+            }
         return make_response(jsonify(responseObject)), 401
+
+    def _get_token(self) -> str:
+        data = request.headers['Authorization']
+        return str.replace(str(data), 'Bearer ', '')
 
 
 # define the API resources
 registration_view = RegisterAPI.as_view('register_api')
 login_view = LoginAPI.as_view('login_api')
+logout_view = LogoutAPI.as_view('logout_api')
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -101,5 +142,11 @@ auth_blueprint.add_url_rule(
 auth_blueprint.add_url_rule(
     '/auth/login',
     view_func=login_view,
+    methods=['POST']
+)
+
+auth_blueprint.add_url_rule(
+    '/auth/logout',
+    view_func=logout_view,
     methods=['POST']
 )
