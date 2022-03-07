@@ -1,4 +1,3 @@
-from xmlrpc.client import Boolean
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import BigInteger, Float, Integer, String
 import jwt
