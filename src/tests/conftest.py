@@ -1,8 +1,10 @@
-import os
-from dotenv import load_dotenv
 import pytest
+import os
+import json
+from dotenv import load_dotenv
 from stravastats import create_app
-from stravastats.db import drop_db, reset_db
+from stravastats.db import drop_db, reset_db, get_db
+from stravastats.api.models import User
 
 
 @pytest.fixture
@@ -31,3 +33,25 @@ def app():
 def client(app):
     """A test client for the app."""
     return app.test_client()
+
+
+@pytest.fixture
+def login(app, client):
+    with app.app_context():
+        db = get_db()
+        user = User(
+            email='gavin@invalid.com',
+            password='123456'
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        login_response = client.post('/auth/login',
+                                     data=json.dumps(dict(
+                                         email='gavin@invalid.com',
+                                         password='123456'
+                                     )),
+                                     content_type='application/json'
+                                     )
+        login_data = json.loads(login_response.data.decode())
+        return login_data

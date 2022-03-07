@@ -4,7 +4,7 @@ from stravastats.db import get_db
 from stravastats.api.models import Athlete
 
 
-def test_add_athlete(app, client):
+def test_add_athlete(app, client, login):
     body = {
         "strava_id": "4009189",
         "username": "testuser",
@@ -20,7 +20,10 @@ def test_add_athlete(app, client):
     }
 
     response = client.post(
-        "/athlete/add", json=body
+        "/athlete/add", json=body,
+        headers=dict(
+            Authorization='Bearer ' + login['auth_token']
+        )
     )
     assert response.status_code == 201
     assert response.content_type == 'application/json'
@@ -33,7 +36,7 @@ def test_add_athlete(app, client):
         assert count == 1
 
 
-def test_get_athlete(app, client):
+def test_get_athlete(app, client, login):
     with app.app_context():
         db = get_db()
         stmt = insert(Athlete).values(
@@ -44,5 +47,7 @@ def test_get_athlete(app, client):
         with db.engine.connect() as conn:
             result = conn.execute(stmt)
 
-    response = client.get("/athlete/1")
+    response = client.get("/athlete/1", headers=dict(
+        Authorization='Bearer ' + login['auth_token']
+    ))
     assert response.status_code == 200

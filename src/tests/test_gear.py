@@ -1,10 +1,9 @@
 import json
-from sqlalchemy import insert
 from stravastats.db import get_db
 from stravastats.api.models import Gear
 
 
-def test_add_gear(app, client):
+def test_add_gear(app, client, login):
     body = {"strava_gear_id": "zy56538745",
             "primary": 0,
             "name": "Boardman Team 2013",
@@ -17,7 +16,9 @@ def test_add_gear(app, client):
             }
 
     response = client.post(
-        "/gear/add", json=body
+        "/gear/add", json=body, headers=dict(
+            Authorization='Bearer ' + login['auth_token']
+        )
     )
     assert response.status_code == 201
     assert response.content_type == 'application/json'
@@ -30,6 +31,8 @@ def test_add_gear(app, client):
         assert count == 1
 
 
-def test_get_gears(app, client):
-    response = client.get("/gears")
+def test_get_gears(client, login):
+    response = client.get("/gears", headers=dict(
+        Authorization='Bearer ' + login['auth_token']
+    ))
     assert response.status_code == 200
