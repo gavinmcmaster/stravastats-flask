@@ -52,7 +52,7 @@ def test_unregistered_user_login_attempt(app, client):
                            content_type='application/json'
                            )
     data = json.loads(response.data.decode())
-    assert data['message'] == 'Invalid user credentials'
+    assert data['message'] == 'Not authorized'
     assert data['status'] == 'fail'
     assert response.content_type == 'application/json'
     assert response.status_code == 401

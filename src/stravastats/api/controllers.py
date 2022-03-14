@@ -91,5 +91,5 @@ class Routes:
                 response = jsonify(activities_schema.dump(activities))
                 return response, 200
 
-            msg = {'message': 'No activities found'}
+            msg = {'message': 'No activities found for this athlete'}
             return msg, 400

@@ -17,12 +17,10 @@ class AddGearService:
 
     def _get_gear(self) -> Boolean:
         try:
-            print(self.json_args)
             self.gear = gear_schema.load(self.json_args)
             return True
         except ValidationError as error:
             print("GearService Validation error " + str(error.args[0]))
-            print(self.json_args)
             return False
 
     def process(self) -> Boolean:
@@ -46,7 +44,6 @@ class AddAthleteService:
 
     def __init__(self, json_args, _session=None) -> None:
         self.json_args = json_args
-        print(type(self.json_args))
         self.session = _session or get_db().session
 
     def _get_athlete(self) -> Boolean:
