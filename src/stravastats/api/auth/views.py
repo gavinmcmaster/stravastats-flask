@@ -98,14 +98,9 @@ class LogoutAPI(MethodView):
         try:
             token = self._get_token()
             user_id = session['user_id']
-            print(f"LOGOUT")
-            print(f"user id {user_id}")
-            print(f"token {token}")
             token_service = AuthTokenService(user_id, token)
             if not token_service.delete():
                 return unauthorized_response()
-
-            print(f"LOGOUT TOKEN DELETED")
 
             session['user_id'] = None
             responseObject = {
