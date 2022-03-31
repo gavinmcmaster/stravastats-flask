@@ -31,7 +31,7 @@ def test_add_gear(app, client, login):
         assert count == 1
 
 
-def txest_get_gears(client, login):
+def test_get_gears(client, login):
     response = client.get("/gears", headers=dict(
         Authorization='Bearer ' + login['auth_token']
     ))

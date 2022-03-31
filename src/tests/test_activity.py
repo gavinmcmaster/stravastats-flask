@@ -63,7 +63,7 @@ def test_get_activity(app, client, login):
         assert response.status_code == 200
 
 
-def test_get__no_activities(app, client, login):
+def test_get_no_activities(app, client, login):
     with app.app_context():
         db = get_db()
         stmt = insert(Activity).values(athlete_id=5009176, name="NC500: Brora to Dingwall",
