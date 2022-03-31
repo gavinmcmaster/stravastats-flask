@@ -1,6 +1,6 @@
 from functools import wraps
 import os
-from flask import request, abort, make_response, jsonify
+from flask import request, make_response, jsonify
 import jwt
 from ..services import AuthTokenService
 

@@ -1,4 +1,3 @@
-import os
 from flask import Blueprint, request
 from flask.json import jsonify
 from .models import Athlete, Activity, Gear
