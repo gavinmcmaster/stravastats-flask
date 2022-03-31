@@ -1,8 +1,14 @@
-## Development
+App with basic JWT-based authentication, includes the following routes:
 
-Use either of the following local or docker instructions
-
-### Local
+- /auth/register
+- /auth/login
+- /auth/logout
+- /athlete/add
+- /athlete/[id] (Get athlete)
+- /activity/add
+- /activities/[strava id] (Get activity)
+- /gear/add
+- /gears (Get gears)
 
 #### Setup
 
@@ -15,6 +21,7 @@ Use either of the following local or docker instructions
 
 - `make local-run`
 - access the app at `http://localhost:9000`
+- Test routes
 
 #### Test
 
