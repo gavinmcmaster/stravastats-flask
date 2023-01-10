@@ -4,12 +4,14 @@ from dotenv import load_dotenv
 from .dev import create_blueprint as create_dev_blueprint
 from .api import create_blueprint as create_api_blueprint
 from .api.auth.views import auth_blueprint
+from flask_cors import CORS
 
 from .conf import ma, db
 
 
 def create_app(test_config=None) -> Flask:
     app = Flask(__name__)
+    CORS(app)
 
     load_dotenv()
 
