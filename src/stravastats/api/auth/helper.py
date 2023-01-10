@@ -21,11 +21,16 @@ def validate_api_token(f):
             return unauthorized_response()
         user_id = decoded['sub']
         token_service = AuthTokenService(user_id, token)
-        # TODO Handle refresh token here?
+        # TODO Handle refresh token here? JWT extended?
         if not token_service.match():
             print(
                 f"Validate API Token ERROR - No matching token found for user id {user_id}")
             return unauthorized_response()
+
+        if not token_service.valid(decoded['exp']):
+            print(
+                f"Validate API Token ERROR - Token expired")
+            return unauthorized_response()            
 
         return f(*args, **kwargs)
     return authorize

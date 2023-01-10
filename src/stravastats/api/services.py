@@ -126,15 +126,19 @@ class AuthTokenService:
             print("ERROR: " + str(error.orig))
             return False
 
-    def match(self):
+    def match(self) -> Boolean:
         try:
             auth_token = AuthToken.query.filter_by(
-                user_id=self.user_id).first()
+                user_id=self.user_id,token=self.token).first()
 
             return auth_token.token == self.token
         except exc.SQLAlchemyError as error:
             print("ERROR: AuthTokenService match")
             return False
+
+    def valid(self, expiry) -> Boolean:
+        now = round(time.time())
+        return expiry > now
 
     def get(self, user_id):
         try:

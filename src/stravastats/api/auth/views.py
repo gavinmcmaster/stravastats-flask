@@ -14,6 +14,7 @@ class RegisterAPI(MethodView):
 
     def post(self):
         post_data = request.get_json()
+        # TODO add validation
         user = User.query.filter_by(email=post_data.get('email')).first()
         if not user:
             try:
@@ -28,13 +29,15 @@ class RegisterAPI(MethodView):
                 token_service = AuthTokenService(user.id, auth_token)
                 if not token_service.add():
                     return unauthorized_response()
-                responseObject = {
+                
+                response = jsonify({
                     'status': 'success',
                     'message': 'User successfully registered',
                     'auth_token': auth_token
-                }
+                });
 
-                return make_response(jsonify(responseObject)), 201
+                return response, 201
+
             except Exception as e:
                 print("RegisterAPI ERROR " + str(e.args[0]))
                 responseObject = {
