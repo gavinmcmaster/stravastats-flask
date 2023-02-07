@@ -4,7 +4,7 @@ from .models import Athlete, Activity, Gear
 from .schemas import athlete_schema, gears_schema, activities_schema
 from .services import AddActivityService, AddGearService, AddAthleteService
 from .auth.helper import validate_api_token
-
+import os
 
 class Routes:
 
@@ -18,7 +18,7 @@ class Routes:
         self.route_get_athlete()
         self.route_get_gears()
         self.route_get_activities()
-        # self.route_update_athlete()
+        self.route_get_strava_app()
 
         return self.bp
 
@@ -92,3 +92,13 @@ class Routes:
 
             msg = {'message': 'No activities found for this athlete'}
             return msg, 400
+    
+    def route_get_strava_app(self):
+        @self.bp.route('/strava/app/key', methods=['GET'])
+        @validate_api_token
+        def get_strava_app():       
+            responseObject = {
+                'strava_client_id': os.getenv('STRAVA_CLIENT_ID'),
+                'strava_client_secret': os.getenv('STRAVA_CLIENT_SECRET')
+            }
+            return jsonify(responseObject), 200
