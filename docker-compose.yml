@@ -1,0 +1,38 @@
+volumes:
+  db_vol:
+
+networks:
+  backend: # Back end virtual network
+
+services:
+  postgres:
+    image: postgres:14
+    volumes:
+     - ./scripts/db:/docker-entrypoint-initdb.d/
+      - db_vol:/var/lib/postgresql/data # Mount Volume to Postgres Data directory
+    environment:
+      POSTGRES_USER: "stravauser"
+      POSTGRES_PASSWORD: "stravapass"
+      POSTGRES_DB: "stravastats"
+      POSTGRES_TESTS_DB: "stravastats_unit_tests"
+      SQL_TRACK_MODS: False
+      DATABASE_URI: "postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
+      DATABASE_UNIT_TEST_URI: "postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/POSTGRES_TESTS_DB"
+    networks:
+      - backend
+    command: postgres -c log_destination=stderr -c log_statement=all
+    restart: always
+
+  app:
+    image: gavmcmaster/stravastats:debug
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '5000:5000'
+      - '5678:5678'
+    networks:
+        - backend
+    depends_on:
+      - 'postgres'
+    restart: always
