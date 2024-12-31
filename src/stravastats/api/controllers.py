@@ -12,6 +12,7 @@ class Routes:
         self.bp = bp
 
     def get_blueprint(self) -> Blueprint:
+        self.route_add_home()
         self.route_add_athlete()
         self.route_add_activity()
         self.route_add_gear()
@@ -21,6 +22,13 @@ class Routes:
         self.route_get_strava_app()
 
         return self.bp
+
+    def route_add_home(self):
+        @self.bp.route('/', methods=['GET'])
+        def add_home():
+            msg = "Strava Stats App!"
+            status_code = 200
+            return msg, status_code
 
     def route_add_athlete(self):
         @self.bp.route('/athlete/add', methods=['POST'])
