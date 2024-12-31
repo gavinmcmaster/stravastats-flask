@@ -17,7 +17,7 @@ def validate_api_token(f):
         try:
             decoded = jwt.decode(token, os.getenv('SECRET_KEY'),
                                  algorithms=['HS256'])
-        except:
+        except Exception as e:
             return unauthorized_response()
         user_id = decoded['sub']
         token_service = AuthTokenService(user_id, token)
