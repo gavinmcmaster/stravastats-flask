@@ -1,14 +1,14 @@
 App with basic JWT-based authentication, includes the following routes:
 
-- /auth/register
-- /auth/login
-- /auth/logout
-- /athlete/add
-- /athlete/[id] (Get athlete)
-- /activity/add
-- /activities/[strava id] (Get activity)
-- /gear/add
-- /gears (Get gears)
+- /api/auth/register
+- /api/auth/login
+- /api/auth/logout
+- /api/athlete/add
+- /api/athlete/[id] (Get athlete)
+- /api/activity/add
+- /api/activities/[strava id] (Get activity)
+- /api/gear/add
+- /api/gears (Get gears)
 
 ### Setup (local install)
 
@@ -22,7 +22,8 @@ $ make local-reset-db
 #### Run
 
 - `make local-run`
-- access the app at `http://localhost:9000`
+- Access the app at `http://localhost:9000/api/`
+- API docs: http://localhost:9000/apidocs/#/
 - Test API Endpoints
 
 #### Test
@@ -38,7 +39,8 @@ $ docker compose up -d
 #### Debugging in container with VS Code
 - Start containers (rebuild 'app' if any code changes)
 - VSCode - select remote attach Python debugger, start debugging. Ref~: https://code.visualstudio.com/docs/python/debugging#_example
-- Validate homepage message in browser - http://localhost:5000/
+- Validate homepage message in browser - http://localhost:5000/api/
+- API docs: http://localhost:5000/apidocs/#/
 - Test API Endpoints
 
 #### Unit Tests in Docker
