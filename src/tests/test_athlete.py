@@ -20,7 +20,7 @@ def test_add_athlete(app, client, login):
     }
 
     response = client.post(
-        "/athlete/add", json=body,
+        "/api/athlete/add", json=body,
         headers=dict(
             Authorization='Bearer ' + login['auth_token']
         )
@@ -47,7 +47,7 @@ def test_get_athlete(app, client, login):
         with db.engine.connect() as conn:
             result = conn.execute(stmt)
 
-    response = client.get("/athlete/1", headers=dict(
+    response = client.get("/api/athlete/1", headers=dict(
         Authorization='Bearer ' + login['auth_token']
     ))
     assert response.status_code == 200

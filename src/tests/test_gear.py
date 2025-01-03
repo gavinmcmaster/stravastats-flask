@@ -16,7 +16,7 @@ def test_add_gear(app, client, login):
             }
 
     response = client.post(
-        "/gear/add", json=body, headers=dict(
+        "/api/gear/add", json=body, headers=dict(
             Authorization='Bearer ' + login['auth_token']
         )
     )
@@ -32,7 +32,7 @@ def test_add_gear(app, client, login):
 
 
 def test_get_gears(client, login):
-    response = client.get("/gears", headers=dict(
+    response = client.get("/api/gears", headers=dict(
         Authorization='Bearer ' + login['auth_token']
     ))
     assert response.status_code == 200

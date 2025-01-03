@@ -29,7 +29,7 @@ def test_add_activity(app, client, login):
     }
 
     response = client.post(
-        "/activity/add", json=body,
+        "/api/activity/add", json=body,
         headers=dict(
             Authorization='Bearer ' + login['auth_token']
         )
@@ -56,7 +56,7 @@ def test_get_activity(app, client, login):
         with db.engine.connect() as conn:
             result = conn.execute(stmt)
 
-        response = client.get("/activities/4009176",
+        response = client.get("/api/activities/4009176",
                               headers=dict(
                                   Authorization='Bearer ' + login['auth_token']
                               ))
@@ -74,10 +74,10 @@ def test_get_no_activities(app, client, login):
         with db.engine.connect() as conn:
             result = conn.execute(stmt)
 
-        response = client.get("/activities/4009176",
+        response = client.get("/api/activities/4009176",
                               headers=dict(
                                   Authorization='Bearer ' + login['auth_token']
                               ))
         data = json.loads(response.data.decode())
-        assert data['message'] == 'No activities found for this athlete'
-        assert response.status_code == 400
+        assert data == []
+        assert response.status_code == 200

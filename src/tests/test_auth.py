@@ -4,7 +4,7 @@ from stravastats.db import get_db
 
 
 def test_registration(client):
-    response = client.post('/auth/register',
+    response = client.post('/api/auth/register',
                            data=json.dumps(dict(
                                email='gavin@invalid.com',
                                password='123456'
@@ -28,7 +28,7 @@ def test_registered_user_login(app, client):
         db.session.add(user)
         db.session.commit()
 
-        response = client.post('/auth/login',
+        response = client.post('/api/auth/login',
                                data=json.dumps(dict(
                                    email='gavin@invalid.com',
                                    password='123456'
@@ -44,7 +44,7 @@ def test_registered_user_login(app, client):
 
 
 def test_unregistered_user_login_attempt(app, client):
-    response = client.post('/auth/login',
+    response = client.post('/api/auth/login',
                            data=json.dumps(dict(
                                email='unregistered@invalid.com',
                                password='123456'
@@ -70,7 +70,7 @@ def test_logout(app, client):
 
         # user login
         login_response = client.post(
-            '/auth/login',
+            '/api/auth/login',
             data=json.dumps(dict(
                 email='gavin@invalid.com',
                 password='123456'
@@ -85,7 +85,7 @@ def test_logout(app, client):
         assert login_response.status_code == 200
 
         response = client.post(
-            '/auth/logout',
+            '/api/auth/logout',
             headers=dict(
                 Authorization='Bearer ' + login_data['auth_token']
             )

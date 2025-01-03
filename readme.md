@@ -36,8 +36,23 @@ $ docker compose pull
 $ docker compose up -d
 ```
 #### Debugging in container with VS Code
-- Start containers (rebuild app if any code changes)
+- Start containers (rebuild 'app' if any code changes)
 - VSCode - select remote attach Python debugger, start debugging. Ref~: https://code.visualstudio.com/docs/python/debugging#_example
 - Validate homepage message in browser - http://localhost:5000/
 - Test API Endpoints
+
+#### Unit Tests in Docker
+In 'postgres' container create tests DB then run tests:
+
+```
+$ create database stravastats_unit_tests;
+# Run all tests in 'app' container
+$ make local-test
+# Single file
+$ py.test tests/test_activity.py
+# Test pattern
+$ py.test tests/test_activity.py -k "get_no_activities"
+```
+
+
 
