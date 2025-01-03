@@ -5,16 +5,30 @@ from ...db import get_db
 from ..models import User
 from .helper import validate_api_token, unauthorized_response
 from ..services import AuthTokenService
-
+from flasgger.utils import swag_from
+from ..schema_docs import register_user_dict, user_login_dict
 
 class RegisterAPI(MethodView):
 
     def __init__(self, _session=None) -> None:
         self.session = _session or get_db().session
 
+    @swag_from(register_user_dict)
     def post(self):
+        """
+        Register user
+        ---
+        """
         post_data = request.get_json()
-        # TODO add validation
+        # Email & password are required
+        #TODO validate email
+        if not (post_data.get('email') and post_data.get('password')):
+            responseObject = {
+                'status': 'fail',
+                'message': 'Invalid data.'
+            }
+            return make_response(jsonify(responseObject)), 400
+
         user = User.query.filter_by(email=post_data.get('email')).first()
         if not user:
             try:
@@ -29,7 +43,7 @@ class RegisterAPI(MethodView):
                 token_service = AuthTokenService(user.id, auth_token)
                 if not token_service.add():
                     return unauthorized_response()
-                
+
                 response = jsonify({
                     'status': 'success',
                     'message': 'User successfully registered',
@@ -39,18 +53,17 @@ class RegisterAPI(MethodView):
                 return response, 201
 
             except Exception as e:
-                print("RegisterAPI ERROR " + str(e.args[0]))
                 responseObject = {
                     'status': 'fail',
-                    'message': 'Some error occurred. Please try again.'
+                    'message': 'An internal error occurred'
                 }
-                return make_response(jsonify(responseObject)), 401
+                return make_response(jsonify(responseObject)), 500
         else:
             responseObject = {
                 'status': 'fail',
-                'message': 'User already exists. Please Log in.',
+                'message': 'User already exists',
             }
-            return make_response(jsonify(responseObject)), 202
+            return make_response(jsonify(responseObject)), 409
 
 
 class LoginAPI(MethodView):
@@ -58,8 +71,21 @@ class LoginAPI(MethodView):
     def __init__(self, _session=None) -> None:
         self.session = _session or get_db().session
 
+    @swag_from(user_login_dict)
     def post(self):
+        """
+        User login
+        ---
+        """
         post_data = request.get_json()
+        # Email & password are required
+        #TODO validate email
+        if not (post_data.get('email') and post_data.get('password')):
+            responseObject = {
+                'status': 'fail',
+                'message': 'Invalid data.'
+            }
+            return make_response(jsonify(responseObject)), 400
         try:
 
             user = User.query.filter_by(email=post_data.get('email')).first()
@@ -80,7 +106,7 @@ class LoginAPI(MethodView):
                 else:
                     return unauthorized_response()
             else:
-                print("User does not exist UNAUTHORISED")
+
                 return unauthorized_response()
         except Exception as e:
             print("LoginAPI ERROR " + str(e.args[0]))
@@ -98,6 +124,20 @@ class LogoutAPI(MethodView):
 
     @validate_api_token
     def post(self):
+        """
+        User logout
+        ---
+        tags:
+            - Authentication
+        description: Logs out currently logged-in user
+        responses:
+            200:
+                description: 'Successfully logged out'
+            400:
+                description: 'Not authorized'
+            500:
+                description: 'An internal error occurred'
+        """
         try:
             token = self._get_token()
             user_id = session['user_id']
@@ -114,9 +154,9 @@ class LogoutAPI(MethodView):
         except:
             responseObject = {
                 'status': 'fail',
-                'message': 'Not authorized',
+                'message': 'An internal error occurred',
             }
-        return make_response(jsonify(responseObject)), 401
+        return make_response(jsonify(responseObject)), 500
 
     def _get_token(self) -> str:
         data = request.headers['Authorization']
