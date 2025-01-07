@@ -46,7 +46,7 @@ def login(app, client):
         db.session.add(user)
         db.session.commit()
 
-        login_response = client.post('/auth/login',
+        login_response = client.post('/api/auth/login',
                                      data=json.dumps(dict(
                                          email='gavin@invalid.com',
                                          password='123456'

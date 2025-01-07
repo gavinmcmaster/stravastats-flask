@@ -31,8 +31,7 @@ class User(db.Model):
     id = Column(BigInteger, primary_key=True)
     email = Column(String(100), nullable=False, default='')
     password = db.Column(db.String(255), nullable=False)
-    strava_id = Column(BigInteger, ForeignKey(
-        Athlete.strava_id), unique=True, nullable=True)
+    strava_id = Column(BigInteger, unique=True, nullable=True)
     created_at = Column(BigInteger, nullable=False)
 
     def __init__(self, email, password, strava_id=None) -> None:
