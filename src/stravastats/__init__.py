@@ -7,6 +7,7 @@ from .api.auth.views import auth_blueprint
 from flask_cors import CORS
 from flasgger import Swagger
 from . import conf
+from loguru import logger
 
 def create_app(test_config=None) -> Flask:
     app = Flask(__name__)
@@ -27,6 +28,8 @@ def create_app(test_config=None) -> Flask:
     app.register_blueprint(create_dev_blueprint())
     app.register_blueprint(create_api_blueprint(), url_prefix='/api')
     app.register_blueprint(auth_blueprint, url_prefix='/api')
+    logger.add("data/logs/app.log", rotation="1 MB", level=os.getenv('LOG_LEVEL'))
+    app.logger.addHandler(logger)
 
     app.secret_key = os.getenv('SECRET_KEY')
 

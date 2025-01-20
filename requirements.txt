@@ -14,7 +14,6 @@ Jinja2==3.0.1
 MarkupSafe==2.0.1
 marshmallow==3.14.1
 marshmallow-sqlalchemy==0.26.1
-#packaging==21.2
 pluggy==1.0.0
 psycopg2-binary==2.9.3
 py==1.11.0
@@ -31,3 +30,4 @@ sqlalchemy-utils==0.41.2
 toml==0.10.2
 Werkzeug==2.0.2
 flasgger==0.9.5
+loguru==0.7.3

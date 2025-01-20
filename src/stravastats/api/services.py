@@ -7,20 +7,21 @@ import time
 from ..db import get_db
 from .schemas import gear_schema, athlete_schema, activity_schema, auth_token_schema
 from .models import AuthToken
-
+from ..logging import Logging
 
 class AddGearService:
 
-    def __init__(self, json_args, _session=None) -> None:
+    def __init__(self, json_args, _session=None, logger=Logging()) -> None:
         self.json_args = json_args
         self.session = _session or get_db().session
-
+        self.log = logger
+        
     def _get_gear(self) -> Boolean:
         try:
             self.gear = gear_schema.load(self.json_args)
             return True
         except ValidationError as error:
-            print("GearService Validation error " + str(error.args[0]))
+            self.log.log_debug(f"GearService Validation error {str(error.args[0])}")
             return False
 
     def process(self) -> Boolean:
@@ -35,23 +36,24 @@ class AddGearService:
             msg = jsonify({'message': f'Gear \'{self.gear.name}\' added'})
             return msg, 201
         except exc.SQLAlchemyError as error:
-            print("ERROR: " + str(error.orig))
+            self.log.log_debug(f"Error adding gear: {str(error.orig)}")
             msg = {'message': 'Error adding gear'}
             return msg, 500
 
 
 class AddAthleteService:
 
-    def __init__(self, json_args, _session=None) -> None:
+    def __init__(self, json_args, _session=None, logger=Logging()) -> None:
         self.json_args = json_args
         self.session = _session or get_db().session
+        self.log = logger
 
     def _get_athlete(self) -> Boolean:
         try:
             self.athlete = athlete_schema.load(self.json_args)
             return True
         except ValidationError as error:
-            print("AthleteService Validation error " + str(error.args[0]))
+            self.log.log_debug(f"AthleteService Validation error {str(error.args[0])}")
             return False
 
     def process(self) -> Boolean:
@@ -69,23 +71,24 @@ class AddAthleteService:
                 {'message': f'Athlete \'{self.athlete.username}\' added'})
             return msg, 201
         except exc.SQLAlchemyError as error:
-            print("ERROR: " + str(error.orig))
+            self.log.log_debug(f"Error adding athlete: {str(error.orig)}")
             msg = {'message': 'Error adding athlete'}
             return msg, 500
 
 
 class AddActivityService:
 
-    def __init__(self, json_args, _session=None) -> None:
+    def __init__(self, json_args, _session=None, logger=Logging()) -> None:
         self.json_args = json_args
         self.session = _session or get_db().session
+        self.log = logger
 
     def _get_activity(self) -> Boolean:
         try:
             self.activity = activity_schema.load(self.json_args)
             return True
         except ValidationError as error:
-            print("AthleteService Validation error " + str(error.args[0]))
+            self.log.log_debug(f"ActivityService Validation error {str(error.args[0])}")
             return False
 
     def process(self) -> Boolean:
@@ -102,16 +105,17 @@ class AddActivityService:
                 {'message': f'Activity \'{self.activity.name}\' added'})
             return msg, 201
         except exc.SQLAlchemyError as error:
-            print("ERROR: " + str(error.orig))
+            self.log.log_debug(f"Error adding activity: {str(error.orig)}")
             msg = {'message': 'Error adding activity'}
             return msg, 500
 
 
 class AuthTokenService:
-    def __init__(self, user_id, token, _session=None) -> None:
+    def __init__(self, user_id, token, _session=None, logger=Logging()) -> None:
         self.user_id = user_id
         self.token = token
         self.session = _session or get_db().session
+        self.log = logger
 
     def add(self) -> Boolean:
         try:
@@ -123,7 +127,7 @@ class AuthTokenService:
             self.session.commit()
             return True
         except exc.SQLAlchemyError as error:
-            print("ERROR: " + str(error.orig))
+            self.log.log_debug(f"Error adding token: {str(error.orig)}")
             return False
 
     def match(self) -> Boolean:
@@ -133,7 +137,7 @@ class AuthTokenService:
 
             return auth_token.token == self.token
         except exc.SQLAlchemyError as error:
-            print("ERROR: AuthTokenService match")
+            self.log.log_debug(f"Error matching token: {str(error.orig)}")
             return False
 
     def valid(self, expiry) -> Boolean:
@@ -145,7 +149,7 @@ class AuthTokenService:
             auth_token = AuthToken.query.filter_by(user_id=user_id).first()
             return auth_token.token
         except exc.SQLAlchemyError as error:
-            print("ERROR: AuthTokenService get")
+            self.log.log_debug(f"Error getting token: {str(error.orig)}")
             return False
 
     def delete(self):
@@ -156,5 +160,5 @@ class AuthTokenService:
             self.session.commit()
             return True
         except exc.SQLAlchemyError as error:
-            print("ERROR: " + str(error.orig))
+            self.log.log_debug(f"Error deleting token: {str(error.orig)}")
             return False

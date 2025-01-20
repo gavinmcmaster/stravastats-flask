@@ -7,11 +7,13 @@ from .helper import validate_api_token, unauthorized_response
 from ..services import AuthTokenService
 from flasgger.utils import swag_from
 from ..schema_docs import register_user_dict, user_login_dict
+from ...logging import Logging
 
 class RegisterAPI(MethodView):
 
     def __init__(self, _session=None) -> None:
         self.session = _session or get_db().session
+        self.log = Logging()
 
     @swag_from(register_user_dict)
     def post(self):
@@ -109,7 +111,7 @@ class LoginAPI(MethodView):
 
                 return unauthorized_response()
         except Exception as e:
-            print("LoginAPI ERROR " + str(e.args[0]))
+            self.log.log_debug(f"LoginAPI ERROR {str(e.args[0])}")
             responseObject = {
                 'status': 'fail',
                 'message': 'An error occurred'

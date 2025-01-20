@@ -8,11 +8,13 @@ import os
 from sqlalchemy import exc
 from flasgger.utils import swag_from
 from .schema_docs import add_activity_dict, add_athlete_dict, get_athlete_dict, get_activities_dict, add_gear_dict, get_gears_dict
+from ..logging import Logging
 
 class Routes:
 
     def __init__(self, bp: Blueprint) -> None:
         self.bp = bp
+        self.log = Logging()
 
     def get_blueprint(self) -> Blueprint:
         self.route_add_home()
@@ -54,10 +56,16 @@ class Routes:
             Add new Strava athlete profile
             ---
             """
-            service = AddAthleteService(json_args=request.get_json())
+            service = AddAthleteService(json_args=request.get_json(), logger=self.log)
             if service.process():
-                return service.save()
-
+                response = service.save()
+                if response[1] == 201:
+                    self.log.request_info("Athlete Added", request)
+                elif response[1] == 500:
+                    self.log.reqest_error("Error Adding Athlete", request)
+                return response
+                                      
+            self.log.log_debug(f"Bad request: {request.get_json()}")
             msg = jsonify({'message': 'Bad Request'})
             return msg, 400
 
@@ -70,10 +78,15 @@ class Routes:
             Add new Strava actity
             ---
             """
-            service = AddActivityService(json_args=request.get_json())
+            service = AddActivityService(json_args=request.get_json(), logger=self.log)
             if service.process():
-                return service.save()
-
+                response = service.save()
+                if response[1] == 201:
+                    self.log.request_info("Activity Added", request)
+                elif response[1] == 500:                  
+                    self.log.reqest_error("Error Adding Activity", request)
+                return response
+            self.log.log_debug(f"Bad request: {request.get_json()}")
             msg = jsonify({'message': 'Bad Request'})
             return msg, 400
 
@@ -86,10 +99,15 @@ class Routes:
             Add new bike
             ---
             """
-            service = AddGearService(json_args=request.get_json())
+            service = AddGearService(json_args=request.get_json(), logger=self.log)
             if service.process():
-                return service.save()
-
+                response = service.save()
+                if response[1] == 201:
+                    self.log.request_info("Gear Added", request)
+                elif response[1] == 500:
+                    self.log.reqest_error("Error Adding Gear", request)
+            
+            self.log.log_debug(f"Bad request: {request.get_json()}")
             msg = jsonify({'message': 'Bad Request'})
             return msg, 400
 
@@ -108,6 +126,7 @@ class Routes:
                 return response, 200
             except exc.SQLAlchemyError as error:
                 msg = {'message': 'An internal error occurred'}
+                self.log.reqest_error("Error Fetching Gears", request)
                 return msg, 500
 
     def route_get_athlete(self):
@@ -124,6 +143,7 @@ class Routes:
                 response = jsonify(athlete_schema.dump(athlete))
                 return response, 200
 
+            self.log.log_error("Error Fetching Athlete", request)
             msg = {'message': 'Error, athlete not found'}
             return msg, 400
 
@@ -143,6 +163,7 @@ class Routes:
                 return response, 200
             except exc.SQLAlchemyError as error:
                 msg = {'message': 'An internal error occurred'}
+                self.log.log_error("Error Fetching Activities", request)
                 return msg, 500
 
     def route_get_strava_app(self):

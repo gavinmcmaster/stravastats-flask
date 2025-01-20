@@ -3,13 +3,13 @@ import os
 from flask import request, make_response, jsonify
 import jwt
 from ..services import AuthTokenService
-
+from ...logging import Logging
 
 def validate_api_token(f):
     @wraps(f)
     def authorize(*args, **kwargs):
         if not 'Authorization' in request.headers:
-            print("Bail because no Authorisation HEADER")
+            Logging().reqest_error("No Authorisation HEADER", request)
             return unauthorized_response()
         data = request.headers['Authorization']
         token = str.replace(str(data), 'Bearer ', '')
@@ -23,13 +23,11 @@ def validate_api_token(f):
         token_service = AuthTokenService(user_id, token)
         # TODO Handle refresh token here? JWT extended?
         if not token_service.match():
-            print(
-                f"Validate API Token ERROR - No matching token found for user id {user_id}")
+            Logging().log_debug(f"Token {token} not found for user {user_id}")
             return unauthorized_response()
 
         if not token_service.valid(decoded['exp']):
-            print(
-                f"Validate API Token ERROR - Token expired")
+            Logging().log_debug(f"Token {token} expired")
             return unauthorized_response()            
 
         return f(*args, **kwargs)
