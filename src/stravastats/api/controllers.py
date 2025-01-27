@@ -9,6 +9,7 @@ from sqlalchemy import exc
 from flasgger.utils import swag_from
 from .schema_docs import add_activity_dict, add_athlete_dict, get_athlete_dict, get_activities_dict, add_gear_dict, get_gears_dict
 from ..logging import Logging
+from ..db import get_db
 
 class Routes:
 
@@ -106,6 +107,7 @@ class Routes:
                     self.log.request_info("Gear Added", request)
                 elif response[1] == 500:
                     self.log.reqest_error("Error Adding Gear", request)
+                return response
             
             self.log.log_debug(f"Bad request: {request.get_json()}")
             msg = jsonify({'message': 'Bad Request'})
@@ -138,12 +140,13 @@ class Routes:
             Fetch athlete profile given its identifier
             ---
             """
-            athlete = Athlete.query.get(id)
+            athlete = get_db().session.query(Athlete).filter(Athlete.id == id).first()
+            athlete = Athlete.query
             if athlete is not None:
                 response = jsonify(athlete_schema.dump(athlete))
                 return response, 200
 
-            self.log.log_error("Error Fetching Athlete", request)
+            self.log.reqest_error("Error Fetching Athlete", request)
             msg = {'message': 'Error, athlete not found'}
             return msg, 400
 
@@ -163,7 +166,7 @@ class Routes:
                 return response, 200
             except exc.SQLAlchemyError as error:
                 msg = {'message': 'An internal error occurred'}
-                self.log.log_error("Error Fetching Activities", request)
+                self.log.reqest_error("Error Fetching Activities", request)
                 return msg, 500
 
     def route_get_strava_app(self):

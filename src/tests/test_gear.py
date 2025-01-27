@@ -4,16 +4,17 @@ from stravastats.api.models import Gear
 
 
 def test_add_gear(app, client, login):
-    body = {"strava_gear_id": "zy56538745",
-            "primary": 0,
-            "name": "Boardman Team 2013",
-            "retired": 0,
-            "brand_name": "Boardman",
-            "model_name": "Team 2013",
-            "description": "",
-            "weight": 9.0,
-            "created_at": 1619765803
-            }
+    body = {
+        "strava_gear_id": "zy56538745",
+        "primary": 0,
+        "name": "Boardman Team 2013",
+        "retired": 0,
+        "brand_name": "Boardman",
+        "model_name": "Team 2013",
+        "description": "",
+        "weight": 9.0,
+        "created_at": 1619765803
+        }
 
     response = client.post(
         "/api/gear/add", json=body, headers=dict(
